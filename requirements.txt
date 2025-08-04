@@ -1,0 +1,6 @@
+pydicom
+SimpleITK
+pandas
+numpy
+Pillow
+PyPDF2

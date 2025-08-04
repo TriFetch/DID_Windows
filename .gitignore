@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.spec
+*.pkg
+*.exe
+*.app
+*.dmg
+
+# PyInstaller
+*.manifest
+build/*.spec
+
+# Large files
+DID_Tool_Clean
+DID_Tool.zip
+DID_Tool_Distribution/
+
+# Test data
+test_dir/
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# IDE
+.vscode/
+.idea/
+
+# Local settings
+.claude/

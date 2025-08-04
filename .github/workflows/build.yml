@@ -1,0 +1,78 @@
+name: Build Executables
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            artifact_name: DID_Tool.exe
+            asset_name: DID_Tool-windows.exe
+          - os: ubuntu-latest
+            artifact_name: DID_Tool
+            asset_name: DID_Tool-linux
+          - os: macos-latest
+            artifact_name: DID_Tool
+            asset_name: DID_Tool-macos
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --name=DID_Tool --clean DID.py
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.asset_name }}
+        path: dist/${{ matrix.artifact_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Display structure of downloaded files
+      run: ls -la ./artifacts/
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        name: Release Build ${{ github.run_number }}
+        draft: false
+        prerelease: false
+        files: |
+          ./artifacts/DID_Tool-windows.exe/DID_Tool.exe
+          ./artifacts/DID_Tool-linux/DID_Tool
+          ./artifacts/DID_Tool-macos/DID_Tool
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
